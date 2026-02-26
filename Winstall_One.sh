@@ -389,18 +389,19 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/too
 log "Oh My ZSH installed"
 
 color_echo "yellow" "Installing ZSH plugins..."
-git clone https://github.com/zsh-users/zsh-autosuggestions.git \
-  "${ZSH_CUSTOM:-$ACTUAL_HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" 2>/dev/null \
-  || log "INFO: zsh-autosuggestions plugin already exists"
-git clone https://github.com/zsh-users/zsh-syntax-highlighting.git \
-  "${ZSH_CUSTOM:-$ACTUAL_HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" 2>/dev/null \
-  || log "INFO: zsh-syntax-highlighting plugin already exists"
-git clone https://github.com/zdharma-continuum/fast-syntax-highlighting.git \
-  "${ZSH_CUSTOM:-$ACTUAL_HOME/.oh-my-zsh/custom}/plugins/fast-syntax-highlighting" 2>/dev/null \
-  || log "INFO: fast-syntax-highlighting plugin already exists"
-git clone --depth 1 https://github.com/marlonrichert/zsh-autocomplete.git \
-  "${ZSH_CUSTOM:-$ACTUAL_HOME/.oh-my-zsh/custom}/plugins/zsh-autocomplete" 2>/dev/null \
-  || log "INFO: zsh-autocomplete plugin already exists"
+
+# zsh-autosuggestions
+git clone https://github.com/zsh-users/zsh-autosuggestions.git   "${ZSH_CUSTOM:-$ACTUAL_HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" 2>/dev/null   || log "INFO: zsh-autosuggestions plugin already exists"
+
+# zsh-syntax-highlighting
+git clone https://github.com/zsh-users/zsh-syntax-highlighting.git   "${ZSH_CUSTOM:-$ACTUAL_HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" 2>/dev/null   || log "INFO: zsh-syntax-highlighting plugin already exists"
+
+# fast-syntax-highlighting
+git clone https://github.com/zdharma-continuum/fast-syntax-highlighting.git   "${ZSH_CUSTOM:-$ACTUAL_HOME/.oh-my-zsh/custom}/plugins/fast-syntax-highlighting" 2>/dev/null   || log "INFO: fast-syntax-highlighting plugin already exists"
+
+# zsh-autocomplete
+git clone --depth 1 https://github.com/marlonrichert/zsh-autocomplete.git   "${ZSH_CUSTOM:-$ACTUAL_HOME/.oh-my-zsh/custom}/plugins/zsh-autocomplete" 2>/dev/null   || log "INFO: zsh-autocomplete plugin already exists"
+
 log "ZSH plugins installed"
 
 color_echo "yellow" "Configuring .zshrc..."
@@ -409,12 +410,11 @@ if [ -f "$ZSHRC" ]; then
   sed -i 's/plugins=(git)/plugins=(git zsh-autosuggestions zsh-syntax-highlighting fast-syntax-highlighting zsh-autocomplete)/' "$ZSHRC"
   sed -i 's/ZSH_THEME="robbyrussell"/ZSH_THEME="jonathan"/' "$ZSHRC"
   log ".zshrc plugins and theme configured"
-  log ".zshrc plugins configured"
 else
   log "WARNING: .zshrc not found, Oh My ZSH may not have installed correctly"
 fi
 
-color_echo "yellow" "Setting ZSH as default shell..."
+color_echo "yellow" "Changing default shell to ZSH..."
 sudo chsh -s "$(which zsh)" "$ACTUAL_USER"
 log "Default shell changed to ZSH for $ACTUAL_USER"
 
