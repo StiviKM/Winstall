@@ -1,131 +1,181 @@
-# Win_Lookalike 🖥️✨
+# Winstall
 
-**Win_Lookalike** is a GNOME desktop customization project designed to replicate the Windows aesthetic on **Fedora 42**. With a simple setup, you can transform your GNOME desktop to look and feel like Windows — including themes, icons, taskbars, and system tweaks.
-
----
-
-## 📥 How to Download the Scripts
-
-To get started with **Win_Lookalike**, follow these steps:
-
-1. **Download the Scripts:**
-
-   * Navigate to the [Win_Lookalike GitHub repository](https://github.com/StiviKM/Win_Lookalike).
-   * Download the following files:
-
-     * `WinLook_First.sh`
-     * `WinLook_Second.sh`
-
-2. **Move the Scripts to Your Home Directory:**
-
-   ```bash
-   mv WinLook_First.sh WinLook_Second.sh ~/
-   ```
-
-3. **Make the First Script Executable:**
-
-   ```bash
-   chmod +x ~/WinLook_First.sh
-   ```
-
-4. **Run the First Script:**
-
-   ```bash
-   ./WinLook_First.sh
-   ```
-
-> The second script (`WinLook_Second.sh`) will automatically execute upon your next login, applying additional configurations.
+Automated Fedora 43 Workstation setup that transforms a fresh install into a Windows-lookalike environment. Designed for mass deployment — clone, chmod, run, walk away.
 
 ---
 
-## ✨ Features and Functionalities
+## Requirements
 
-The **Win_Lookalike** scripts provide a comprehensive set of features to transform your GNOME desktop:
-
-### 🎨 Visual Customizations
-
-* Windows-like desktop theme and icons
-* Taskbar configuration to mimic Windows taskbar
-* Windows-style application menu (Arc Menu)
-* Pre-configured Windows-style wallpaper
-
-### ⚙️ System Tweaks
-
-* Locale set to **Bulgarian** by default
-* Adds **Bulgarian (Traditional Phonetic)** keyboard layout
-* Automatic application of theme and system settings after login
-* File manager tweaks to resemble Windows Explorer
-* Window decorations matching Windows aesthetics
+- Fresh **Fedora 43 Workstation** install
+- A **normal user account** (not root)
+- Internet connection
+- GNOME desktop session
 
 ---
 
-## 📝 FULL LIST: Settings Changed & Actions Performed
+## Usage
 
-The **Win_Lookalike** scripts modify your GNOME desktop and system in the following ways:
+```bash
+git clone https://github.com/StiviKM/Winstall
+chmod +x Winstall/Winstall_One.sh Winstall/Winstall_Two.sh
+./Winstall/Winstall_One.sh
+```
 
-### 📦 Installed Packages
-
-* Installs **make** for building software.
-* Installs **git** for version control.
-* Installs **wget** for downloading files.
-* Installs **GNOME Extensions App** to manage GNOME extensions.
-* Installs **meson** and **ninja-build** for building GNOME extensions.
-
-### 🧹 Cleanup
-
-* Removes all temporary files and assets used during installation.
-
-### 🌟 Desktop & GNOME Tweaks
-
-* Sets your **favorite applications** in the GNOME dock (Firefox and Nautilus).
-* Sets the **system language/region to Bulgarian**.
-* Adds **US and Bulgarian (Traditional Phonetic) keyboard layouts**.
-* Adjusts **window buttons** to match Windows layout (minimize, maximize, close on the right).
-* Enables **tree view** in Nautilus file manager.
-* Shows **“Delete Permanently” option** in Nautilus.
-* Adds **“Create Link” option** in Nautilus context menu.
-* Ensures **directories are shown first** in file chooser dialogs.
-* Enables **recursive search** in Nautilus by default.
-* Always displays **image thumbnails** in Nautilus.
-* Shows **directory item counts** in Nautilus.
+That's it. The rest is fully automated across two stages with an automatic reboot between them.
 
 ---
 
-## 🙏 Acknowledgments
+## How It Works
 
-This project utilizes several open-source tools and extensions. Special thanks to the respective developers and communities for their contributions:
+### Stage 1 — `Winstall_One.sh`
+Runs manually. Handles all system-level setup, then reboots.
 
-* **Dash to Panel** – Combines GNOME dash and top bar into a single panel: [GitHub](https://github.com/home-sweet-gnome/dash-to-panel)
-* **Arc Menu** – GNOME Shell extension for a Windows-like Start menu: [GitLab](https://gitlab.com/arcmenu/ArcMenu)
-* **AppIndicator** – GNOME Shell extension for Ubuntu AppIndicators: [GitHub](https://github.com/ubuntu/gnome-shell-extension-appindicator)
-* **Win11 Icons** – Windows 11 inspired icon pack: [GitHub](https://github.com/yeyushengfan258/Win11-icon-theme)
-* **Desktop Icons NG** – GNOME desktop icons manager: [GitHub](https://github.com/pop-os/desktop-icons-ng)
+- Prompts for your password **once**, keeps sudo alive for the entire script
+- Configures DNF for faster downloads (`max_parallel_downloads=10`)
+- Full system update and upgrade
+- Enables DNF automatic updates (`dnf5-plugin-automatic`)
+- Enables RPM Fusion free and nonfree repositories
+- Replaces Fedora Flatpak repo with Flathub
+- Installs multimedia codecs (ffmpeg, gstreamer plugins)
+- Installs Intel and AMD hardware accelerated video codecs
+- Installs and enables SSH server
+- Checks for firmware updates via `fwupdmgr`
+- Removes bloatware (see list below)
+- Installs all required packages and dependencies
+- Installs Flatpak applications
+- Installs NoMachine (latest version, fetched dynamically)
+- Installs ZeroTier
+- Clones the Winstall repo and installs all GNOME extensions
+- Installs ZSH + Oh My ZSH with plugins and `jonathan` theme
+- Installs Microsoft Windows fonts
+- Installs Google Fonts collection
+- Schedules Stage 2 to run automatically after reboot
+- **Reboots the machine**
 
-**Legal Notice**: This project uses a Windows-style wallpaper and icons inspired by Windows 11. These assets are used for aesthetic purposes only and are not affiliated with or endorsed by Microsoft Corporation. All trademarks and registered trademarks are the property of their respective owners.
+### Stage 2 — `Winstall_Two.sh`
+Runs automatically after login via GNOME autostart. Handles all GNOME session-level setup, then reboots.
+
+- Removes the autostart entry immediately on start (prevents loops even on failure)
+- Waits for GNOME Shell to be fully ready before proceeding
+- Loads Dash-to-Panel configuration from repo
+- Loads ArcMenu configuration from repo (with automatic home directory path fix)
+- Installs and applies Win11 icon theme (dark variant)
+- Sets the wallpaper
+- Enables all GNOME extensions
+- Applies all desktop settings (see below)
+- Configures GNOME Remote Desktop (RDP) with TLS certificate
+- Creates Remmina RDP connection profile for Gensoft server
+- Cleans up all temporary files and the Winstall directory
+- **Reboots the machine**
 
 ---
 
-## ⚠️ Critical Disclaimer
+## What Gets Removed (Bloatware)
 
-**These scripts are provided “AS IS” without any warranty. Use at your own risk.**
-
-* **Fresh Install Recommended**: Optimized for **Fedora 42** only.
-* **No Liability**: The author assumes no responsibility for data loss or system issues.
-* **Security Notice**: Always review scripts from the internet before execution.
+| App | Package |
+|---|---|
+| Audio Player (Decibels) | `decibels` |
+| Video Player (Showtime) | `showtime` |
+| Boxes | `gnome-boxes` |
+| Camera | `snapshot` |
+| Characters | `gnome-characters` |
+| Connections | `gnome-connections` |
+| Contacts | `gnome-contacts` |
+| Disks | `gnome-disk-utility` |
+| Disk Usage Analyzer | `baobab` |
+| Fedora Media Writer | `mediawriter` |
+| Fonts | `gnome-font-viewer` |
+| GNOME Color Manager | `gnome-color-manager` |
+| LibreOffice (default) | `libreoffice*` |
+| Logs | `gnome-logs` |
+| Maps | `gnome-maps` |
+| Music | `gnome-music` |
+| Parental Controls | `malcontent-control` |
+| Problem Reporting | `abrt` + related |
+| Rhythmbox | `rhythmbox` |
+| System Monitor | `gnome-system-monitor` |
+| Tour | `gnome-tour` |
+| Totem | `totem` |
+| Weather | `gnome-weather` |
 
 ---
 
-## 🎯 Use Cases
+## What Gets Installed
 
-* **Desktop Makeover**: Transform your GNOME desktop into a Windows-like environment
-* **Testing Environments**: Ideal for experimenting with GNOME tweaks and themes
-* **Learning Linux**: Understand GNOME desktop configuration and scripting
-* **Development**: Prepare a visually familiar environment for testing applications
+### System Packages
+`make` `git` `wget` `curl` `cabextract` `unzip` `fontconfig` `gnome-extensions-app` `gnome-tweaks` `meson` `ninja-build` `gettext` `gnome-menus` `glib2-devel` `htop` `fastfetch` `chromium` `openssh-server` `gnome-remote-desktop` `remmina` `tuned` `tuned-ppd` `zsh` `zsh-autosuggestions` `zsh-syntax-highlighting`
+
+### Flatpak (from Flathub)
+- Thunderbird
+- LibreOffice
+- Slack
+- Flatseal
+- Extension Manager
+
+### Other
+- NoMachine (latest RPM, dynamically fetched)
+- ZeroTier
+
+### GNOME Extensions
+- Dash-to-Panel
+- ArcMenu
+- Desktop Icons NG (DING)
+- AppIndicator Support
 
 ---
 
-## 🤝 Contributing
+## Desktop Settings Applied
 
-Found an issue or have suggestions? Contributions are welcome! Please open an issue on our [GitHub Repository](https://github.com/StiviKM/Win_Lookalike).
+- **Taskbar** — Dash-to-Panel at bottom, Windows-style
+- **Start menu** — ArcMenu with custom icon
+- **Icons** — Win11-dark theme
+- **Wallpaper** — Custom Windows-style wallpaper
+- **Pinned apps** — Firefox, Nautilus, Slack, Thunderbird, Remmina
+- **Window buttons** — Minimize, Maximize, Close
+- **Keyboard layouts** — US + Bulgarian Traditional Phonetic
+- **Locale** — `bg_BG.UTF-8`
+- **Hot corners** — Disabled
+- **Workspaces** — Fixed, 1 workspace
+- **Power** — Never sleep, never hibernate, never dim, screen lock disabled, power button does nothing, performance profile via tuned
+- **Nautilus** — Tree view, permanent delete, create link, sort directories first, recursive search, thumbnails, item counts
+- **Shell** — ZSH with Oh My ZSH, jonathan theme, autosuggestions, syntax highlighting, fast-syntax-highlighting, autocomplete
 
 ---
+
+## Remote Access
+
+### SSH
+Installed and enabled automatically. Connect with:
+```bash
+ssh username@machine-ip
+```
+
+### RDP (GNOME Remote Desktop)
+Enabled automatically with a self-signed TLS certificate. Port 3389 is opened in the firewall. After setup, set credentials manually with:
+```bash
+grdctl rdp set-credentials <username> <password>
+```
+
+### Remmina
+A pre-configured RDP profile for the Gensoft server (`10.100.33.60`) is created automatically. Username and password are left blank for the user to fill in on first connection.
+
+---
+
+## Logging
+
+Every step is logged with timestamps to:
+```
+~/winstall.log
+```
+
+Check this file if anything goes wrong. Each run appends to the same log so you have a full history.
+
+---
+
+## Notes
+
+- Script must be run as a **normal user**, not root or with sudo
+- Firmware updates are attempted but will show warnings on VMs — this is expected
+- Intel and AMD codec installs will log warnings if the hardware is not present — this is expected and non-fatal
+- Google Fonts download is large (~600MB) and may take a while on slow connections
+- RDP credentials must be set manually after setup — they are intentionally not stored in the script
