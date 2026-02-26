@@ -433,7 +433,12 @@ unzip -o /tmp/winfonts.zip -d "$FONTS_DIR/windows"
 rm -f /tmp/winfonts.zip
 log "Windows fonts installed"
 
-log "INFO: Google Fonts skipped for testing"
+color_echo "yellow" "Installing Google Fonts (this may take a while)..."
+wget -O /tmp/google-fonts.zip https://github.com/google/fonts/archive/main.zip
+unzip -o /tmp/google-fonts.zip "*.ttf" "*.otf" -d "$FONTS_DIR/google" 2>/dev/null \
+  || unzip -o /tmp/google-fonts.zip -d "$FONTS_DIR/google"
+rm -f /tmp/google-fonts.zip
+log "Google Fonts installed"
 
 fc-cache -fv
 log "Font cache updated"
