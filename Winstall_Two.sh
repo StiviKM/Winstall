@@ -32,10 +32,15 @@ color_echo "yellow" "🔑 Please enter your password once to authorize the setup
 sudo -v
 while true; do sudo -n true; sleep 60; done &
 SUDO_KEEPALIVE_PID=$!
-trap 'kill $SUDO_KEEPALIVE_PID 2>/dev/null || true' EXIT
+trap 'kill $SUDO_KEEPALIVE_PID 2>/dev/null || true; rm -f "$ACTUAL_HOME/.config/autostart/winstall_two.desktop"; cd "$ACTUAL_HOME"; rm -rf "$ACTUAL_HOME/Winstall"' EXIT
 
 log "Stage 2 started by user: $ACTUAL_USER"
 color_echo "blue" "🚀 Starting Winstall Stage 2..."
+
+# === Remove autostart entry immediately so it NEVER loops regardless of failures ===
+AUTOSTART_FILE="$ACTUAL_HOME/.config/autostart/winstall_two.desktop"
+rm -f "$AUTOSTART_FILE"
+log "Autostart entry removed at script start"
 
 # =============================================================================
 # SECTION 1: Wait for GNOME Shell to be Ready
