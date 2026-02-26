@@ -64,7 +64,6 @@ Runs automatically after login via GNOME autostart. Handles all GNOME session-le
 - Enables all GNOME extensions
 - Applies all desktop settings (see below)
 - Configures GNOME Remote Desktop (RDP) with TLS certificate
-- Creates Remmina RDP connection profile for Gensoft server
 - Cleans up all temporary files and the Winstall directory
 
 ---
@@ -153,10 +152,6 @@ ssh username@machine-ip
 Enabled automatically with a self-signed TLS certificate. Port 3389 is opened in the firewall. After setup, set credentials manually with:
 ```bash
 grdctl rdp set-credentials <username> <password>
-```
-
-### Remmina
-A pre-configured RDP profile for the Gensoft server (`10.100.33.60`) is created automatically. Username and password are left blank for the user to fill in on first connection.
 
 ---
 
