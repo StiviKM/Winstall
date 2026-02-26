@@ -407,6 +407,8 @@ color_echo "yellow" "Configuring .zshrc..."
 ZSHRC="$ACTUAL_HOME/.zshrc"
 if [ -f "$ZSHRC" ]; then
   sed -i 's/plugins=(git)/plugins=(git zsh-autosuggestions zsh-syntax-highlighting fast-syntax-highlighting zsh-autocomplete)/' "$ZSHRC"
+  sed -i 's/ZSH_THEME="robbyrussell"/ZSH_THEME="jonathan"/' "$ZSHRC"
+  log ".zshrc plugins and theme configured"
   log ".zshrc plugins configured"
 else
   log "WARNING: .zshrc not found, Oh My ZSH may not have installed correctly"
