@@ -185,7 +185,7 @@ log "Window buttons configured"
 
 # --- Taskbar / Pinned Apps ---
 color_echo "yellow" "Setting pinned apps..."
-gsettings set org.gnome.shell favorite-apps "['org.mozilla.firefox.desktop', 'org.gnome.Nautilus.desktop']"
+gsettings set org.gnome.shell favorite-apps "['org.mozilla.firefox.desktop', 'org.gnome.Nautilus.desktop', 'com.slack.Slack.desktop', 'org.remmina.Remmina.desktop']"
 log "Pinned apps set"
 
 # --- Locale & Keyboard ---
@@ -217,12 +217,18 @@ gsettings set org.gnome.desktop.screensaver idle-activation-enabled false
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
 log "Sleep, hibernate, suspend disabled"
 
-# Set performance power profile if available
-if command -v powerprofilesctl &>/dev/null; then
-  powerprofilesctl set performance 2>/dev/null && log "Power profile set to performance" \
+# Set performance power profile using tuned (Fedora 41+) or powerprofilesctl fallback
+color_echo "yellow" "Setting performance power profile..."
+if systemctl is-active --quiet tuned 2>/dev/null; then
+  sudo tuned-adm profile throughput-performance 2>/dev/null \
+    && log "Power profile set to throughput-performance via tuned" \
+    || log "WARNING: tuned profile set failed"
+elif command -v powerprofilesctl &>/dev/null; then
+  powerprofilesctl set performance 2>/dev/null \
+    && log "Power profile set to performance via powerprofilesctl" \
     || log "WARNING: Could not set performance power profile"
 else
-  log "INFO: powerprofilesctl not available, skipping performance profile"
+  log "WARNING: No power profile manager found (tuned or powerprofilesctl)"
 fi
 
 color_echo "green" "✅ Power settings configured."
