@@ -52,7 +52,7 @@ log_section "System Update & DNF Configuration"
 
 color_echo "yellow" "Configuring DNF for faster downloads..."
 if ! grep -q "max_parallel_downloads" /etc/dnf/dnf.conf; then
-  cp /etc/dnf/dnf.conf /etc/dnf/dnf.conf.bak."$(date +%Y%m%d%H%M%S)"
+  sudo cp /etc/dnf/dnf.conf /etc/dnf/dnf.conf.bak."$(date +%Y%m%d%H%M%S)"
   echo "max_parallel_downloads=10" | sudo tee -a /etc/dnf/dnf.conf > /dev/null
   log "DNF max_parallel_downloads set to 10"
 else
@@ -70,9 +70,15 @@ sudo dnf autoremove -y
 log "System update complete"
 
 color_echo "yellow" "Enabling DNF automatic updates..."
-sudo dnf install -y dnf-automatic
+sudo dnf install -y dnf5-plugin-automatic
+# Copy the default config template if not already present
+if [ ! -f /etc/dnf/automatic.conf ]; then
+  sudo cp /usr/share/dnf5/dnf5-plugins/automatic.conf /etc/dnf/automatic.conf
+  log "DNF automatic config template copied"
+fi
+sudo sed -i 's/apply_updates = false/apply_updates = true/' /etc/dnf/automatic.conf
 sudo sed -i 's/apply_updates = no/apply_updates = yes/' /etc/dnf/automatic.conf
-sudo systemctl enable --now dnf-automatic.timer
+sudo systemctl enable --now dnf5-automatic.timer
 log "DNF automatic updates enabled"
 
 color_echo "green" "✅ System update and DNF configuration complete."
@@ -106,8 +112,8 @@ log_section "Multimedia Codecs & Hardware Acceleration"
 
 color_echo "yellow" "Installing multimedia codecs..."
 sudo dnf swap -y ffmpeg-free ffmpeg --allowerasing || log "WARNING: ffmpeg swap failed, may already be installed"
-sudo dnf update -y @multimedia --setopt="install_weak_deps=False" --exclude=PackageKit-gstreamer-plugin
-sudo dnf update -y @sound-and-video
+sudo dnf group install -y multimedia --setopt="install_weak_deps=False" --exclude=PackageKit-gstreamer-plugin || log "WARNING: multimedia group install failed"
+sudo dnf group install -y sound-and-video || log "WARNING: sound-and-video group install failed"
 log "Multimedia codecs installed"
 
 color_echo "yellow" "Installing Intel hardware accelerated codecs..."
@@ -377,13 +383,7 @@ unzip -o /tmp/winfonts.zip -d "$FONTS_DIR/windows"
 rm -f /tmp/winfonts.zip
 log "Windows fonts installed"
 
-color_echo "yellow" "Installing Google Fonts (this may take a while)..."
-wget -O /tmp/google-fonts.zip https://github.com/google/fonts/archive/main.zip
-# Extract only .ttf and .otf files to avoid repo metadata polluting the fonts dir
-unzip -o /tmp/google-fonts.zip "*.ttf" "*.otf" -d "$FONTS_DIR/google" 2>/dev/null || \
-  unzip -o /tmp/google-fonts.zip -d "$FONTS_DIR/google"
-rm -f /tmp/google-fonts.zip
-log "Google Fonts installed"
+log "INFO: Google Fonts skipped for testing"
 
 fc-cache -fv
 log "Font cache updated"
