@@ -152,7 +152,7 @@ ssh username@machine-ip
 Enabled automatically with a self-signed TLS certificate. Port 3389 is opened in the firewall. After setup, set credentials manually with:
 ```bash
 grdctl rdp set-credentials <username> <password>
-
+```
 ---
 
 ## Logging
