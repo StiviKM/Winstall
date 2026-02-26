@@ -182,7 +182,10 @@ BLOAT_PACKAGES=(
   gnome-system-monitor
   gnome-tour
   totem
+  showtime
+  decibels
   gnome-weather
+  rhythmbox
 )
 
 for pkg in "${BLOAT_PACKAGES[@]}"; do
@@ -218,6 +221,8 @@ sudo dnf install -y \
   chromium \
   openssh-server \
   gnome-remote-desktop \
+  tuned \
+  tuned-ppd \
   remmina
 log "Core packages installed"
 
@@ -369,6 +374,49 @@ log "AppIndicator Support installed"
 
 color_echo "green" "✅ All GNOME extensions installed."
 
+
+# =============================================================================
+# SECTION 12: Install ZSH + Oh My ZSH
+# =============================================================================
+log_section "Installing ZSH and Oh My ZSH"
+
+color_echo "yellow" "Installing ZSH..."
+sudo dnf install -y zsh zsh-autosuggestions zsh-syntax-highlighting
+log "ZSH packages installed"
+
+color_echo "yellow" "Installing Oh My ZSH..."
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+log "Oh My ZSH installed"
+
+color_echo "yellow" "Installing ZSH plugins..."
+git clone https://github.com/zsh-users/zsh-autosuggestions.git \
+  "${ZSH_CUSTOM:-$ACTUAL_HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" 2>/dev/null \
+  || log "INFO: zsh-autosuggestions plugin already exists"
+git clone https://github.com/zsh-users/zsh-syntax-highlighting.git \
+  "${ZSH_CUSTOM:-$ACTUAL_HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" 2>/dev/null \
+  || log "INFO: zsh-syntax-highlighting plugin already exists"
+git clone https://github.com/zdharma-continuum/fast-syntax-highlighting.git \
+  "${ZSH_CUSTOM:-$ACTUAL_HOME/.oh-my-zsh/custom}/plugins/fast-syntax-highlighting" 2>/dev/null \
+  || log "INFO: fast-syntax-highlighting plugin already exists"
+git clone --depth 1 https://github.com/marlonrichert/zsh-autocomplete.git \
+  "${ZSH_CUSTOM:-$ACTUAL_HOME/.oh-my-zsh/custom}/plugins/zsh-autocomplete" 2>/dev/null \
+  || log "INFO: zsh-autocomplete plugin already exists"
+log "ZSH plugins installed"
+
+color_echo "yellow" "Configuring .zshrc..."
+ZSHRC="$ACTUAL_HOME/.zshrc"
+if [ -f "$ZSHRC" ]; then
+  sed -i 's/plugins=(git)/plugins=(git zsh-autosuggestions zsh-syntax-highlighting fast-syntax-highlighting zsh-autocomplete)/' "$ZSHRC"
+  log ".zshrc plugins configured"
+else
+  log "WARNING: .zshrc not found, Oh My ZSH may not have installed correctly"
+fi
+
+color_echo "yellow" "Setting ZSH as default shell..."
+sudo chsh -s "$(which zsh)" "$ACTUAL_USER"
+log "Default shell changed to ZSH for $ACTUAL_USER"
+
+color_echo "green" "✅ ZSH and Oh My ZSH installed."
 # =============================================================================
 # SECTION 12: Install Fonts
 # =============================================================================
