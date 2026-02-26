@@ -185,7 +185,7 @@ log "Window buttons configured"
 
 # --- Taskbar / Pinned Apps ---
 color_echo "yellow" "Setting pinned apps..."
-gsettings set org.gnome.shell favorite-apps "['org.mozilla.firefox.desktop', 'org.gnome.Nautilus.desktop', 'com.slack.Slack.desktop', 'org.remmina.Remmina.desktop']"
+gsettings set org.gnome.shell favorite-apps "['org.mozilla.firefox.desktop', 'org.gnome.Nautilus.desktop', 'com.slack.Slack.desktop', 'org.mozilla.Thunderbird.desktop', 'org.remmina.Remmina.desktop']"
 log "Pinned apps set"
 
 # --- Locale & Keyboard ---
@@ -419,15 +419,17 @@ color_echo "green" "✅ Remmina profile created."
 log_section "Cleanup"
 
 color_echo "yellow" "Cleaning up..."
+
+# Remove autostart entry FIRST so it never runs again on next login
+AUTOSTART_FILE="$ACTUAL_HOME/.config/autostart/winstall_two.desktop"
+rm -f "$AUTOSTART_FILE"
+log "Autostart entry removed"
+
+# Remove Winstall directory
+# Note: we use a subshell cd to home first so we are never inside the deleted dir
+cd "$ACTUAL_HOME"
 rm -rf "$WINSTALL_DIR"
 log "Winstall directory removed"
-
-# Remove autostart entry
-AUTOSTART_FILE="$ACTUAL_HOME/.config/autostart/winstall_two.desktop"
-if [ -f "$AUTOSTART_FILE" ]; then
-  rm -f "$AUTOSTART_FILE"
-  log "Autostart entry removed"
-fi
 
 color_echo "green" "✅ Cleanup complete."
 
