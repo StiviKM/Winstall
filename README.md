@@ -66,7 +66,6 @@ Runs automatically after login via GNOME autostart. Handles all GNOME session-le
 - Configures GNOME Remote Desktop (RDP) with TLS certificate
 - Creates Remmina RDP connection profile for Gensoft server
 - Cleans up all temporary files and the Winstall directory
-- **Reboots the machine**
 
 ---
 
