@@ -33,6 +33,16 @@ fi
 ACTUAL_USER=$(logname 2>/dev/null || echo "$USER")
 ACTUAL_HOME=$(getent passwd "$ACTUAL_USER" | cut -d: -f6)
 
+# === Detect repo directory regardless of case (Winstall or winstall) ===
+if [ -d "$ACTUAL_HOME/Winstall" ]; then
+  WINSTALL_DIR="$ACTUAL_HOME/Winstall"
+elif [ -d "$ACTUAL_HOME/winstall" ]; then
+  WINSTALL_DIR="$ACTUAL_HOME/winstall"
+else
+  WINSTALL_DIR="$ACTUAL_HOME/Winstall"
+  log "WARNING: Could not find Winstall directory, defaulting to $WINSTALL_DIR"
+fi
+
 # === Request sudo once and keep it alive for the entire script ===
 color_echo "yellow" "🔑 Please enter your password once to authorize the installation:"
 sudo -v
@@ -145,8 +155,8 @@ log_section "Firmware Updates"
 
 color_echo "yellow" "Checking for firmware updates..."
 sudo fwupdmgr refresh --force || log "WARNING: fwupdmgr refresh failed"
-sudo fwupdmgr get-updates || log "INFO: No firmware updates available or fwupdmgr error"
-sudo fwupdmgr update -y || log "WARNING: Firmware update failed or not needed"
+sudo fwupdmgr get-updates --assume-yes || log "INFO: No firmware updates available or fwupdmgr error"
+sudo fwupdmgr update --assume-yes || log "WARNING: Firmware update failed or not needed"
 log "Firmware update step complete"
 
 color_echo "green" "✅ Firmware update step complete."
@@ -269,7 +279,6 @@ NX_URL=$(curl -s "https://www.nomachine.com/download/download&id=1" \
   | head -1)
 
 if [ -z "$NX_URL" ]; then
-  # Fallback: try the download page directly
   NX_URL=$(curl -s "https://www.nomachine.com/download" \
     | grep -oP 'https://download\.nomachine\.com/download/[^"]+x86_64\.rpm' \
     | head -1)
@@ -312,8 +321,7 @@ color_echo "green" "✅ ZeroTier installed."
 # =============================================================================
 log_section "Cloning Winstall Repository"
 
-WINSTALL_DIR="$ACTUAL_HOME/Winstall"
-if [ -d "$WINSTALL_DIR" ]; then
+if [ -d "$ACTUAL_HOME/Winstall" ] || [ -d "$ACTUAL_HOME/winstall" ]; then
   log "Winstall directory already exists, pulling latest..."
   git -C "$WINSTALL_DIR" pull
 else
@@ -374,7 +382,6 @@ log "AppIndicator Support installed"
 
 color_echo "green" "✅ All GNOME extensions installed."
 
-
 # =============================================================================
 # SECTION 12: Install ZSH + Oh My ZSH
 # =============================================================================
@@ -390,17 +397,21 @@ log "Oh My ZSH installed"
 
 color_echo "yellow" "Installing ZSH plugins..."
 
-# zsh-autosuggestions
-git clone https://github.com/zsh-users/zsh-autosuggestions.git   "${ZSH_CUSTOM:-$ACTUAL_HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" 2>/dev/null   || log "INFO: zsh-autosuggestions plugin already exists"
+git clone https://github.com/zsh-users/zsh-autosuggestions.git \
+  "${ZSH_CUSTOM:-$ACTUAL_HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" 2>/dev/null \
+  || log "INFO: zsh-autosuggestions plugin already exists"
 
-# zsh-syntax-highlighting
-git clone https://github.com/zsh-users/zsh-syntax-highlighting.git   "${ZSH_CUSTOM:-$ACTUAL_HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" 2>/dev/null   || log "INFO: zsh-syntax-highlighting plugin already exists"
+git clone https://github.com/zsh-users/zsh-syntax-highlighting.git \
+  "${ZSH_CUSTOM:-$ACTUAL_HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" 2>/dev/null \
+  || log "INFO: zsh-syntax-highlighting plugin already exists"
 
-# fast-syntax-highlighting
-git clone https://github.com/zdharma-continuum/fast-syntax-highlighting.git   "${ZSH_CUSTOM:-$ACTUAL_HOME/.oh-my-zsh/custom}/plugins/fast-syntax-highlighting" 2>/dev/null   || log "INFO: fast-syntax-highlighting plugin already exists"
+git clone https://github.com/zdharma-continuum/fast-syntax-highlighting.git \
+  "${ZSH_CUSTOM:-$ACTUAL_HOME/.oh-my-zsh/custom}/plugins/fast-syntax-highlighting" 2>/dev/null \
+  || log "INFO: fast-syntax-highlighting plugin already exists"
 
-# zsh-autocomplete
-git clone --depth 1 https://github.com/marlonrichert/zsh-autocomplete.git   "${ZSH_CUSTOM:-$ACTUAL_HOME/.oh-my-zsh/custom}/plugins/zsh-autocomplete" 2>/dev/null   || log "INFO: zsh-autocomplete plugin already exists"
+git clone --depth 1 https://github.com/marlonrichert/zsh-autocomplete.git \
+  "${ZSH_CUSTOM:-$ACTUAL_HOME/.oh-my-zsh/custom}/plugins/zsh-autocomplete" 2>/dev/null \
+  || log "INFO: zsh-autocomplete plugin already exists"
 
 log "ZSH plugins installed"
 
@@ -419,8 +430,9 @@ sudo chsh -s "$(which zsh)" "$ACTUAL_USER"
 log "Default shell changed to ZSH for $ACTUAL_USER"
 
 color_echo "green" "✅ ZSH and Oh My ZSH installed."
+
 # =============================================================================
-# SECTION 12: Install Fonts
+# SECTION 13: Install Fonts
 # =============================================================================
 log_section "Installing Fonts"
 
@@ -446,7 +458,7 @@ log "Font cache updated"
 color_echo "green" "✅ Fonts installed."
 
 # =============================================================================
-# SECTION 13: Schedule Winstall_Two.sh After Reboot
+# SECTION 14: Schedule Winstall_Two.sh After Reboot
 # =============================================================================
 log_section "Scheduling Stage 2"
 
