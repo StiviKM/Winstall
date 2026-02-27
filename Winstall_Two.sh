@@ -25,14 +25,23 @@ color_echo() {
 
 ACTUAL_USER=$(logname 2>/dev/null || echo "$USER")
 ACTUAL_HOME=$(getent passwd "$ACTUAL_USER" | cut -d: -f6)
-WINSTALL_DIR="$ACTUAL_HOME/Winstall"
+
+# === Detect repo directory regardless of case (Winstall or winstall) ===
+if [ -d "$ACTUAL_HOME/Winstall" ]; then
+  WINSTALL_DIR="$ACTUAL_HOME/Winstall"
+elif [ -d "$ACTUAL_HOME/winstall" ]; then
+  WINSTALL_DIR="$ACTUAL_HOME/winstall"
+else
+  WINSTALL_DIR="$ACTUAL_HOME/Winstall"
+  log "WARNING: Could not find Winstall directory, defaulting to $WINSTALL_DIR"
+fi
 
 # === Request sudo once and keep it alive for the entire script ===
 color_echo "yellow" "🔑 Please enter your password once to authorize the setup:"
 sudo -v
 while true; do sudo -n true; sleep 60; done &
 SUDO_KEEPALIVE_PID=$!
-trap 'kill $SUDO_KEEPALIVE_PID 2>/dev/null || true; rm -f "$ACTUAL_HOME/.config/autostart/winstall_two.desktop"; cd "$ACTUAL_HOME"; rm -rf "$ACTUAL_HOME/Winstall"' EXIT
+trap 'kill $SUDO_KEEPALIVE_PID 2>/dev/null || true; rm -f "$ACTUAL_HOME/.config/autostart/winstall_two.desktop"; cd "$ACTUAL_HOME"; rm -rf "$WINSTALL_DIR"' EXIT
 
 log "Stage 2 started by user: $ACTUAL_USER"
 color_echo "blue" "🚀 Starting Winstall Stage 2..."
@@ -87,7 +96,6 @@ fi
 # ArcMenu config - update home directory path then load
 if [ -f "$ARC_CONF" ]; then
   color_echo "yellow" "Updating ArcMenu config for current user home directory..."
-  # Make a temp copy with updated paths
   ARC_CONF_TMP="/tmp/Arc_Menu_Win_tmp"
   sed "s|/home/[^/]*/\.arc_icon\.png|$ACTUAL_HOME/.arc_icon.png|g" "$ARC_CONF" > "$ARC_CONF_TMP"
   color_echo "yellow" "Loading ArcMenu config..."
@@ -96,7 +104,7 @@ if [ -f "$ARC_CONF" ]; then
   log "ArcMenu config loaded"
 else
   log "WARNING: Arc_Menu_Win config not found at $ARC_CONF"
-  color_echo "yellow" "⚠️  ArcMenu config not found, skipping."
+  color_echo "yellow" "⚠️  Arc_Menu_Win config not found, skipping."
 fi
 
 color_echo "green" "✅ Extension configs loaded."
@@ -259,7 +267,6 @@ log_section "Configuring GNOME Remote Desktop"
 
 color_echo "yellow" "Enabling GNOME Remote Desktop (RDP)..."
 
-# Ensure gnome-remote-desktop service is enabled
 systemctl --user enable gnome-remote-desktop.service 2>/dev/null || true
 systemctl --user start gnome-remote-desktop.service 2>/dev/null || true
 
@@ -302,13 +309,10 @@ log_section "Cleanup"
 
 color_echo "yellow" "Cleaning up..."
 
-# Remove autostart entry FIRST so it never runs again on next login
 AUTOSTART_FILE="$ACTUAL_HOME/.config/autostart/winstall_two.desktop"
 rm -f "$AUTOSTART_FILE"
 log "Autostart entry removed"
 
-# Remove Winstall directory
-# Note: we use a subshell cd to home first so we are never inside the deleted dir
 cd "$ACTUAL_HOME"
 rm -rf "$WINSTALL_DIR"
 log "Winstall directory removed"
