@@ -107,10 +107,9 @@ log "RPM Fusion enabled"
 
 color_echo "yellow" "Setting up Flathub..."
 sudo dnf install -y flatpak
-flatpak remote-delete fedora --force 2>/dev/null || true
-flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-sudo flatpak repair
-flatpak update -y
+sudo flatpak remote-delete --system fedora --force 2>/dev/null || true
+sudo flatpak remote-add --system --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+sudo flatpak update -y
 log "Flathub configured"
 
 color_echo "green" "✅ RPM Fusion and Flatpak setup complete."
