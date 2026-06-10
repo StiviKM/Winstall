@@ -102,6 +102,13 @@ if [ -f "$ARC_CONF" ]; then
   dconf load /org/gnome/shell/extensions/arcmenu/ < "$ARC_CONF_TMP"
   rm -f "$ARC_CONF_TMP"
   log "ArcMenu config loaded"
+
+  # Explicitly force the icon keys — dconf load alone isn't reliable enough
+  # for ArcMenu to switch away from its default icon
+  dconf write /org/gnome/shell/extensions/arcmenu/menu-button-icon "'Custom_Icon'"
+  dconf write /org/gnome/shell/extensions/arcmenu/custom-menu-button-icon "'${ACTUAL_HOME}/.arc_icon.png'"
+  dconf write /org/gnome/shell/extensions/arcmenu/custom-menu-button-icon-size 40.0
+  log "ArcMenu icon keys written explicitly"
 else
   log "WARNING: Arc_Menu_Win config not found at $ARC_CONF"
   color_echo "yellow" "⚠️  Arc_Menu_Win config not found, skipping."
