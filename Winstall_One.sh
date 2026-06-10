@@ -443,7 +443,7 @@ log "Default shell changed to ZSH for $ACTUAL_USER"
 color_echo "green" "✅ ZSH and Oh My ZSH installed."
 
 # =============================================================================
-# SECTION 14: Schedule Winstall_Two.sh After Reboot
+# SECTION 13: Schedule Winstall_Two.sh After Reboot
 # =============================================================================
 log_section "Scheduling Stage 2"
 
