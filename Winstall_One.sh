@@ -274,29 +274,35 @@ log_section "Installing NoMachine"
 
 color_echo "yellow" "Fetching latest NoMachine RPM URL..."
 
-NX_URL=$(curl -s "https://www.nomachine.com/download/download&id=1" \
-  | grep -oP 'https://download\.nomachine\.com/download/[^"]+x86_64\.rpm' \
-  | head -1)
-
-if [ -z "$NX_URL" ]; then
-  NX_URL=$(curl -s "https://www.nomachine.com/download" \
-    | grep -oP 'https://download\.nomachine\.com/download/[^"]+x86_64\.rpm' \
+NX_URL=""
+for NX_PAGE in \
+  "https://www.nomachine.com/download/linux&id=1" \
+  "https://www.nomachine.com/download/download&id=1" \
+  "https://www.nomachine.com/download"
+do
+  NX_URL=$(curl -sL --max-time 15 "$NX_PAGE" \
+    | grep -oP 'https://download\.nomachine\.com/download/[^"'\'' ]+x86_64\.rpm' \
     | head -1)
-fi
+  [ -n "$NX_URL" ] && break
+done
 
 if [ -z "$NX_URL" ]; then
-  log "WARNING: Could not dynamically fetch NoMachine URL, using known latest version"
-  NX_URL="https://download.nomachine.com/download/9.3/Linux/nomachine_9.3.7_1_x86_64.rpm"
+  log "ERROR: Could not find NoMachine download URL - skipping"
+  color_echo "red" "❌ NoMachine: could not detect download URL. Install manually from https://www.nomachine.com/download"
+else
+  log "NoMachine download URL: $NX_URL"
+  NX_RPM="/tmp/nomachine_latest_x86_64.rpm"
+  if wget --max-redirect=3 -O "$NX_RPM" "$NX_URL" && file "$NX_RPM" | grep -qi "RPM"; then
+    sudo dnf install -y "$NX_RPM"
+    rm -f "$NX_RPM"
+    log "NoMachine installed"
+    color_echo "green" "✅ NoMachine installed."
+  else
+    rm -f "$NX_RPM"
+    log "ERROR: NoMachine download failed or file is not an RPM - skipping"
+    color_echo "red" "❌ NoMachine: download failed or not a valid RPM. Install manually from https://www.nomachine.com/download"
+  fi
 fi
-
-log "NoMachine download URL: $NX_URL"
-NX_RPM="/tmp/nomachine_latest_x86_64.rpm"
-wget -O "$NX_RPM" "$NX_URL"
-sudo dnf install -y "$NX_RPM"
-rm -f "$NX_RPM"
-log "NoMachine installed"
-
-color_echo "green" "✅ NoMachine installed."
 
 # =============================================================================
 # SECTION 10: Install ZeroTier
