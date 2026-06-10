@@ -443,32 +443,6 @@ log "Default shell changed to ZSH for $ACTUAL_USER"
 color_echo "green" "✅ ZSH and Oh My ZSH installed."
 
 # =============================================================================
-# SECTION 13: Install Fonts
-# =============================================================================
-log_section "Installing Fonts"
-
-FONTS_DIR="$ACTUAL_HOME/.local/share/fonts"
-mkdir -p "$FONTS_DIR/windows" "$FONTS_DIR/google"
-
-color_echo "yellow" "Installing Microsoft Windows fonts..."
-wget -O /tmp/winfonts.zip https://mktr.sbs/fonts
-unzip -o /tmp/winfonts.zip -d "$FONTS_DIR/windows"
-rm -f /tmp/winfonts.zip
-log "Windows fonts installed"
-
-color_echo "yellow" "Installing Google Fonts (this may take a while)..."
-wget -O /tmp/google-fonts.zip https://github.com/google/fonts/archive/main.zip
-unzip -o /tmp/google-fonts.zip "*.ttf" "*.otf" -d "$FONTS_DIR/google" 2>/dev/null \
-  || unzip -o /tmp/google-fonts.zip -d "$FONTS_DIR/google"
-rm -f /tmp/google-fonts.zip
-log "Google Fonts installed"
-
-fc-cache -fv
-log "Font cache updated"
-
-color_echo "green" "✅ Fonts installed."
-
-# =============================================================================
 # SECTION 14: Schedule Winstall_Two.sh After Reboot
 # =============================================================================
 log_section "Scheduling Stage 2"
