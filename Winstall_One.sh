@@ -109,6 +109,7 @@ color_echo "yellow" "Setting up Flathub..."
 sudo dnf install -y flatpak
 sudo flatpak remote-delete --system fedora --force 2>/dev/null || true
 sudo flatpak remote-add --system --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+curl -fsSL https://dl.flathub.org/repo/flathub.gpg | sudo flatpak remote-modify --system --gpg-import=- flathub
 sudo flatpak update --system -y
 log "Flathub configured"
 
