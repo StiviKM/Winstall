@@ -109,7 +109,7 @@ color_echo "yellow" "Setting up Flathub..."
 sudo dnf install -y flatpak
 sudo flatpak remote-delete --system fedora --force 2>/dev/null || true
 sudo flatpak remote-add --system --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-sudo flatpak update -y
+sudo flatpak update --system -y
 log "Flathub configured"
 
 color_echo "green" "✅ RPM Fusion and Flatpak setup complete."
@@ -243,25 +243,25 @@ color_echo "green" "✅ Core packages installed."
 log_section "Installing Flatpak Applications"
 
 color_echo "yellow" "Installing Thunderbird..."
-flatpak install -y flathub org.mozilla.Thunderbird
+sudo flatpak install --system -y flathub org.mozilla.Thunderbird
 log "Thunderbird installed"
 
 color_echo "yellow" "Installing LibreOffice..."
-flatpak install -y flathub org.libreoffice.LibreOffice
-flatpak install -y --reinstall org.freedesktop.Platform.Locale/x86_64/24.08 || log "WARNING: LibreOffice locale platform reinstall failed"
-flatpak install -y --reinstall org.libreoffice.LibreOffice.Locale || log "WARNING: LibreOffice locale reinstall failed"
+sudo flatpak install --system -y flathub org.libreoffice.LibreOffice
+sudo flatpak install --system -y --reinstall org.freedesktop.Platform.Locale/x86_64/24.08 || log "WARNING: LibreOffice locale platform reinstall failed"
+sudo flatpak install --system -y --reinstall org.libreoffice.LibreOffice.Locale || log "WARNING: LibreOffice locale reinstall failed"
 log "LibreOffice installed"
 
 color_echo "yellow" "Installing Flatseal..."
-flatpak install -y flathub com.github.tchx84.Flatseal
+sudo flatpak install --system -y flathub com.github.tchx84.Flatseal
 log "Flatseal installed"
 
 color_echo "yellow" "Installing Extension Manager..."
-flatpak install -y flathub com.mattjakeman.ExtensionManager
+sudo flatpak install --system -y flathub com.mattjakeman.ExtensionManager
 log "Extension Manager installed"
 
 color_echo "yellow" "Installing Slack..."
-flatpak install -y flathub com.slack.Slack
+sudo flatpak install --system -y flathub com.slack.Slack
 log "Slack installed"
 
 color_echo "green" "✅ Flatpak applications installed."
