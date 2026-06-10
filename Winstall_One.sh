@@ -398,8 +398,13 @@ sudo dnf install -y zsh zsh-autosuggestions zsh-syntax-highlighting
 log "ZSH packages installed"
 
 color_echo "yellow" "Installing Oh My ZSH..."
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-log "Oh My ZSH installed"
+if [ -d "$ACTUAL_HOME/.oh-my-zsh" ]; then
+  log "Oh My ZSH already installed, skipping"
+  color_echo "yellow" "⚠️  Oh My ZSH already present, skipping install."
+else
+  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+  log "Oh My ZSH installed"
+fi
 
 color_echo "yellow" "Installing ZSH plugins..."
 
