@@ -36,6 +36,74 @@ else
   log "WARNING: Could not find Winstall directory, defaulting to $WINSTALL_DIR"
 fi
 
+# === ArcMenu helpers ===
+ARC_ICON_PATH="$ACTUAL_HOME/.arc_icon.png"
+ARC_MENU_SCHEMA="/org/gnome/shell/extensions/arcmenu"
+
+ensure_arcmenu_icon_asset() {
+  local repo_icon="$WINSTALL_DIR/.arc_icon.png"
+
+  if [ -f "$repo_icon" ]; then
+    cp -f "$repo_icon" "$ARC_ICON_PATH"
+    chmod 0644 "$ARC_ICON_PATH"
+    log "ArcMenu icon asset copied to $ARC_ICON_PATH"
+  elif [ -f "$ARC_ICON_PATH" ]; then
+    chmod 0644 "$ARC_ICON_PATH"
+    log "ArcMenu icon asset already present at $ARC_ICON_PATH"
+  else
+    log "WARNING: ArcMenu icon asset not found at $repo_icon or $ARC_ICON_PATH"
+  fi
+}
+
+apply_arcmenu_icon_settings() {
+  dconf write ${ARC_MENU_SCHEMA}/menu-button-icon "'Custom_Icon'"
+  dconf write ${ARC_MENU_SCHEMA}/custom-menu-button-icon "'${ARC_ICON_PATH}'"
+  dconf write ${ARC_MENU_SCHEMA}/custom-menu-button-icon-size 40.0
+}
+
+verify_arcmenu_icon_settings() {
+  local current_icon_mode current_icon_path current_icon_size
+  current_icon_mode=$(dconf read ${ARC_MENU_SCHEMA}/menu-button-icon 2>/dev/null || echo "<unreadable>")
+  current_icon_path=$(dconf read ${ARC_MENU_SCHEMA}/custom-menu-button-icon 2>/dev/null || echo "<unreadable>")
+  current_icon_size=$(dconf read ${ARC_MENU_SCHEMA}/custom-menu-button-icon-size 2>/dev/null || echo "<unreadable>")
+
+  log "ArcMenu icon mode: $current_icon_mode"
+  log "ArcMenu icon path: $current_icon_path"
+  log "ArcMenu icon size: $current_icon_size"
+
+  if [ "$current_icon_mode" = "'Custom_Icon'" ] \
+     && [ "$current_icon_path" = "'${ARC_ICON_PATH}'" ] \
+     && [ "$current_icon_size" = "40.0" ]; then
+    log "ArcMenu icon settings verified successfully"
+    return 0
+  fi
+
+  return 1
+}
+
+force_arcmenu_icon_configuration() {
+  local attempt max_attempts
+  max_attempts=8
+
+  ensure_arcmenu_icon_asset
+
+  for attempt in $(seq 1 "$max_attempts"); do
+    apply_arcmenu_icon_settings
+    sleep 1
+
+    if verify_arcmenu_icon_settings; then
+      log "ArcMenu icon configuration locked in on attempt $attempt"
+      return 0
+    fi
+
+    log "WARNING: ArcMenu icon settings not yet stable (attempt $attempt/$max_attempts)"
+    sleep 2
+  done
+
+  log "WARNING: ArcMenu icon settings could not be fully verified after $max_attempts attempts"
+  return 1
+}
+
 # === Request sudo once and keep it alive for the entire script ===
 color_echo "yellow" "🔑 Please enter your password once to authorize the setup:"
 sudo -v
@@ -97,18 +165,13 @@ fi
 if [ -f "$ARC_CONF" ]; then
   color_echo "yellow" "Updating ArcMenu config for current user home directory..."
   ARC_CONF_TMP="/tmp/Arc_Menu_Win_tmp"
-  sed "s|/home/[^/]*/\.arc_icon\.png|$ACTUAL_HOME/.arc_icon.png|g" "$ARC_CONF" > "$ARC_CONF_TMP"
+  sed "s|/home/[^/]*/\.arc_icon\.png|$ARC_ICON_PATH|g" "$ARC_CONF" > "$ARC_CONF_TMP"
   color_echo "yellow" "Loading ArcMenu config..."
   dconf load /org/gnome/shell/extensions/arcmenu/ < "$ARC_CONF_TMP"
   rm -f "$ARC_CONF_TMP"
   log "ArcMenu config loaded"
 
-  # Explicitly force the icon keys — dconf load alone isn't reliable enough
-  # for ArcMenu to switch away from its default icon
-  dconf write /org/gnome/shell/extensions/arcmenu/menu-button-icon "'Custom_Icon'"
-  dconf write /org/gnome/shell/extensions/arcmenu/custom-menu-button-icon "'${ACTUAL_HOME}/.arc_icon.png'"
-  dconf write /org/gnome/shell/extensions/arcmenu/custom-menu-button-icon-size 40.0
-  log "ArcMenu icon keys written explicitly"
+  force_arcmenu_icon_configuration || true
 else
   log "WARNING: Arc_Menu_Win config not found at $ARC_CONF"
   color_echo "yellow" "⚠️  Arc_Menu_Win config not found, skipping."
@@ -191,13 +254,11 @@ gnome-extensions enable arcmenu@arcmenu.com \
   && log "ArcMenu re-enabled (second pass)" \
   || log "WARNING: Could not re-enable ArcMenu on second pass"
 
-# Write icon keys NOW while ArcMenu is live — doing this only before enable
-# is too early; the extension overwrites them on init
+# Re-apply icon settings while ArcMenu is live; v69.x may overwrite them during init
+sleep 3
+force_arcmenu_icon_configuration || true
 sleep 2
-dconf write /org/gnome/shell/extensions/arcmenu/menu-button-icon "'Custom_Icon'"
-dconf write /org/gnome/shell/extensions/arcmenu/custom-menu-button-icon "'${ACTUAL_HOME}/.arc_icon.png'"
-dconf write /org/gnome/shell/extensions/arcmenu/custom-menu-button-icon-size 40.0
-log "ArcMenu icon keys applied to running extension"
+force_arcmenu_icon_configuration || true
 
 color_echo "green" "✅ Extensions enabled."
 
