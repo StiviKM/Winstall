@@ -287,7 +287,10 @@ systemctl --user start gnome-remote-desktop.service 2>/dev/null || true
 
 gsettings set org.gnome.desktop.remote-desktop.rdp enable true
 gsettings set org.gnome.desktop.remote-desktop.rdp view-only false
-gsettings set org.gnome.desktop.remote-desktop.rdp authentication-methods "['password']"
+# authentication-methods was removed from the GSettings schema in GNOME 46+;
+# it is now configured exclusively via grdctl — suppress the error gracefully.
+gsettings set org.gnome.desktop.remote-desktop.rdp authentication-methods "['password']" 2>/dev/null \
+  || log "INFO: authentication-methods key not available in this GNOME version (GNOME 46+) - skipping"
 
 # Generate TLS certificate for RDP if not already present
 RDP_CERT_DIR="$ACTUAL_HOME/.local/share/gnome-remote-desktop/certificates"
