@@ -191,6 +191,14 @@ gnome-extensions enable arcmenu@arcmenu.com \
   && log "ArcMenu re-enabled (second pass)" \
   || log "WARNING: Could not re-enable ArcMenu on second pass"
 
+# Write icon keys NOW while ArcMenu is live — doing this only before enable
+# is too early; the extension overwrites them on init
+sleep 2
+dconf write /org/gnome/shell/extensions/arcmenu/menu-button-icon "'Custom_Icon'"
+dconf write /org/gnome/shell/extensions/arcmenu/custom-menu-button-icon "'${ACTUAL_HOME}/.arc_icon.png'"
+dconf write /org/gnome/shell/extensions/arcmenu/custom-menu-button-icon-size 40.0
+log "ArcMenu icon keys applied to running extension"
+
 color_echo "green" "✅ Extensions enabled."
 
 # =============================================================================
@@ -279,7 +287,6 @@ systemctl --user start gnome-remote-desktop.service 2>/dev/null || true
 
 gsettings set org.gnome.desktop.remote-desktop.rdp enable true
 gsettings set org.gnome.desktop.remote-desktop.rdp view-only false
-gsettings set org.gnome.desktop.remote-desktop.rdp prompt-enabled false
 gsettings set org.gnome.desktop.remote-desktop.rdp authentication-methods "['password']"
 
 # Generate TLS certificate for RDP if not already present
