@@ -274,7 +274,7 @@ log "Window buttons configured"
 
 # --- Taskbar / Pinned Apps ---
 color_echo "yellow" "Setting pinned apps..."
-gsettings set org.gnome.shell favorite-apps "['org.mozilla.firefox.desktop', 'org.gnome.Nautilus.desktop', 'com.slack.Slack.desktop', 'org.mozilla.Thunderbird.desktop', 'org.remmina.Remmina.desktop']"
+gsettings set org.gnome.shell favorite-apps "['org.mozilla.firefox.desktop', 'org.gnome.Nautilus.desktop', 'slack.desktop', 'org.mozilla.Thunderbird.desktop', 'org.remmina.Remmina.desktop']"
 log "Pinned apps set"
 
 # --- Locale & Keyboard ---

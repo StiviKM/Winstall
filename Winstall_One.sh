@@ -261,8 +261,10 @@ color_echo "yellow" "Installing Extension Manager..."
 sudo flatpak install --system -y flathub com.mattjakeman.ExtensionManager
 log "Extension Manager installed"
 
-color_echo "yellow" "Installing Slack..."
-sudo flatpak install --system -y flathub com.slack.Slack
+color_echo "yellow" "Installing Slack (official RPM)..."
+curl -L "https://slack.com/downloads/instructions/linux?ddl=1&build=rpm" -o /tmp/slack.rpm
+sudo dnf install -y /tmp/slack.rpm
+rm -f /tmp/slack.rpm
 log "Slack installed"
 
 color_echo "green" "✅ Flatpak applications installed."
