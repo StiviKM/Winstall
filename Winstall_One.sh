@@ -262,10 +262,18 @@ sudo flatpak install --system -y flathub com.mattjakeman.ExtensionManager
 log "Extension Manager installed"
 
 color_echo "yellow" "Installing Slack (official RPM)..."
-curl -L "https://slack.com/downloads/instructions/linux?ddl=1&build=rpm" -o /tmp/slack.rpm
-sudo dnf install -y /tmp/slack.rpm
-rm -f /tmp/slack.rpm
-log "Slack installed"
+SLACK_VERSION=$(curl -s "https://slack.com/downloads/linux" | grep -oP '(?<=VERSION )\d+\.\d+\.\d+' | head -1)
+if [ -z "$SLACK_VERSION" ]; then
+  color_echo "red" "❌ Failed to determine latest Slack version. Skipping Slack installation."
+  log "ERROR: Could not fetch Slack version from downloads page"
+else
+  SLACK_RPM_URL="https://downloads.slack-edge.com/releases/linux/${SLACK_VERSION}/prod/x64/slack-${SLACK_VERSION}-0.1.el8.x86_64.rpm"
+  log "Downloading Slack ${SLACK_VERSION} from ${SLACK_RPM_URL}"
+  curl -L "$SLACK_RPM_URL" -o /tmp/slack.rpm
+  sudo dnf install -y /tmp/slack.rpm
+  rm -f /tmp/slack.rpm
+  log "Slack ${SLACK_VERSION} installed"
+fi
 
 color_echo "green" "✅ Flatpak applications installed."
 
