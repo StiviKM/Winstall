@@ -1,8 +1,14 @@
 [/]
-custom-menu-button-icon='/home/USERNAME/.arc_icon.png'
+custom-menu-button-icon='/home/viking-t/.arc_icon.png'
 custom-menu-button-icon-size=40.0
-menu-button-icon='Custom_Icon'
+icon-size-apps=-1
+icon-size-buttons=-1
+icon-size-categories=-1
+icon-size-misc=-1
+icon-size-shortcuts=-1
+menu-button-icon='/home/viking-t/.arc_icon.png'
+menu-button-icon-size=40
 menu-layout='Windows'
 prefs-visible-page=0
 search-entry-border-radius=(true, 25)
-update-notifier-project-version=69
+update-notifier-project-version=73

@@ -262,17 +262,18 @@ sudo flatpak install --system -y flathub com.mattjakeman.ExtensionManager
 log "Extension Manager installed"
 
 color_echo "yellow" "Installing Slack (official RPM)..."
-SLACK_VERSION=$(curl -s "https://slack.com/downloads/linux" | grep -oP '(?<=VERSION )\d+\.\d+\.\d+' | head -1)
-if [ -z "$SLACK_VERSION" ]; then
-  color_echo "red" "❌ Failed to determine latest Slack version. Skipping Slack installation."
-  log "ERROR: Could not fetch Slack version from downloads page"
+SLACK_RPM_URL=$(curl -sL "https://slack.com/downloads/instructions/linux?ddl=1&build=rpm" \
+  | grep -oE 'https://downloads\.slack-edge\.com/desktop-releases/linux/x64/[0-9.]+/slack-[0-9.]+-0\.1\.el8\.x86_64\.rpm' \
+  | head -1)
+if [ -z "$SLACK_RPM_URL" ]; then
+  color_echo "red" "❌ Failed to determine latest Slack RPM URL. Skipping Slack installation."
+  log "ERROR: Could not fetch Slack RPM URL from downloads page"
 else
-  SLACK_RPM_URL="https://downloads.slack-edge.com/releases/linux/${SLACK_VERSION}/prod/x64/slack-${SLACK_VERSION}-0.1.el8.x86_64.rpm"
-  log "Downloading Slack ${SLACK_VERSION} from ${SLACK_RPM_URL}"
+  log "Downloading Slack from ${SLACK_RPM_URL}"
   curl -L "$SLACK_RPM_URL" -o /tmp/slack.rpm
   sudo dnf install -y /tmp/slack.rpm
   rm -f /tmp/slack.rpm
-  log "Slack ${SLACK_VERSION} installed"
+  log "Slack installed from ${SLACK_RPM_URL}"
 fi
 
 color_echo "green" "✅ Flatpak applications installed."
@@ -282,36 +283,20 @@ color_echo "green" "✅ Flatpak applications installed."
 # =============================================================================
 log_section "Installing NoMachine"
 
-color_echo "yellow" "Fetching latest NoMachine RPM URL..."
+color_echo "yellow" "Fetching latest NoMachine RPM..."
 
-NX_URL=""
-for NX_PAGE in \
-  "https://www.nomachine.com/download/linux&id=1" \
-  "https://www.nomachine.com/download/download&id=1" \
-  "https://www.nomachine.com/download"
-do
-  NX_URL=$(curl -sL --max-time 15 "$NX_PAGE" \
-    | grep -oP 'https://download\.nomachine\.com/download/[^"'\'' ]+x86_64\.rpm' \
-    | head -1)
-  [ -n "$NX_URL" ] && break
-done
+NX_RPM_URL="https://downloads.nomachine.com/download/?id=1&platform=linux"
+NX_RPM="/tmp/nomachine_latest_x86_64.rpm"
 
-if [ -z "$NX_URL" ]; then
-  log "ERROR: Could not find NoMachine download URL - skipping"
-  color_echo "red" "❌ NoMachine: could not detect download URL. Install manually from https://www.nomachine.com/download"
+if curl -L --max-time 30 -o "$NX_RPM" "$NX_RPM_URL" && file "$NX_RPM" | grep -qi "RPM"; then
+  log "Downloaded NoMachine RPM from ${NX_RPM_URL}"
+  sudo dnf install -y "$NX_RPM"
+  rm -f "$NX_RPM"
+  color_echo "green" "✅ NoMachine installed."
 else
-  log "NoMachine download URL: $NX_URL"
-  NX_RPM="/tmp/nomachine_latest_x86_64.rpm"
-  if wget --max-redirect=3 -O "$NX_RPM" "$NX_URL" && file "$NX_RPM" | grep -qi "RPM"; then
-    sudo dnf install -y "$NX_RPM"
-    rm -f "$NX_RPM"
-    log "NoMachine installed"
-    color_echo "green" "✅ NoMachine installed."
-  else
-    rm -f "$NX_RPM"
-    log "ERROR: NoMachine download failed or file is not an RPM - skipping"
-    color_echo "red" "❌ NoMachine: download failed or not a valid RPM. Install manually from https://www.nomachine.com/download"
-  fi
+  rm -f "$NX_RPM"
+  log "ERROR: NoMachine download failed or file is not a valid RPM - skipping"
+  color_echo "red" "❌ NoMachine: download failed or not a valid RPM. Install manually from https://www.nomachine.com/download"
 fi
 
 # =============================================================================
