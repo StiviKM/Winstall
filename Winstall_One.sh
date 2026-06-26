@@ -285,10 +285,13 @@ log_section "Installing NoMachine"
 
 color_echo "yellow" "Fetching latest NoMachine RPM..."
 
-NX_RPM_URL="https://downloads.nomachine.com/download/?id=1&platform=linux"
+NX_DOWNLOAD_PAGE="https://download.nomachine.com/download/?id=1&platform=linux"
+NX_RPM_URL=$(curl -fsSL -A 'Mozilla/5.0' "$NX_DOWNLOAD_PAGE" \
+  | grep -oE 'https://[^"[:space:]]+nomachine_[^"[:space:]]+x86_64\.rpm' \
+  | head -1)
 NX_RPM="/tmp/nomachine_latest_x86_64.rpm"
 
-if curl -L --max-time 30 -o "$NX_RPM" "$NX_RPM_URL" && file "$NX_RPM" | grep -qi "RPM"; then
+if [ -n "$NX_RPM_URL" ] && curl -fsSL -A 'Mozilla/5.0' "$NX_RPM_URL" -o "$NX_RPM" && rpm -qp "$NX_RPM" >/dev/null 2>&1; then
   log "Downloaded NoMachine RPM from ${NX_RPM_URL}"
   sudo dnf install -y "$NX_RPM"
   rm -f "$NX_RPM"
